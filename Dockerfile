@@ -1,19 +1,17 @@
-# Use a pre-built GDAL image
-FROM osgeo/gdal:alpine-small-3.1.0
+FROM python:3.9-alpine
 
-# Set the working directory
 WORKDIR /app
 
-# Copy the application files
+RUN apk add --no-cache \
+    gdal-dev \
+    gcc \
+    musl-dev \
+    g++ \
+    libffi-dev \
+    openssl-dev
+
 COPY . .
 
-# Install any required dependencies
-RUN apk add --no-cache \
-    python3 \
-    py3-pip
-
-# Install Python dependencies if applicable
-RUN pip3 install -r requirements.txt
-
-# Define the command to run your application
-CMD ["python3", "your_script.py"]
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir fastapi uvicorn pydantic requests geojson rasterio
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
